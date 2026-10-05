@@ -2,7 +2,7 @@
 /**
  * AUTO-GENERATED, DO NOT EDIT
  * Compiler: 805.1.0.0
- * Generated: 2026-10-05T14:05:14.1885730Z
+ * Generated: 2026-10-05T14:05:44.5269000Z
  */
 global use extension \Tyhp\ArrayExtensions;
 global use extension \Tyhp\ArrayExtensionsVersioned;
@@ -893,17 +893,11 @@ namespace Tyhp {
             fn countValues(): array<TValue, int> => \array_count_values($this);
         }
     }
-    class ArrayExtensionsVersioned as ArrayExtensionsVersioned__tyhpExtensionBacker {
-        #[\Tyhp\Optimize\Pure]
-        public static function first<TKey extends int|string, TValue>(array<TKey, TValue> $this_): ?TValue;
-        #[\Tyhp\Optimize\Pure]
-        public static function last<TKey extends int|string, TValue>(array<TKey, TValue> $this_): ?TValue;
-    }
     extension ArrayExtensionsVersioned<TKey extends int|string, TValue> extends array<TKey, TValue> {
         #[\Tyhp\Optimize\Pure]
-        fn first(): ?TValue => ArrayExtensionsVersioned__tyhpExtensionBacker::first($this);
+        fn first(): ?TValue => \array_first($this);
         #[\Tyhp\Optimize\Pure]
-        fn last(): ?TValue => ArrayExtensionsVersioned__tyhpExtensionBacker::last($this);
+        fn last(): ?TValue => \array_last($this);
         #[\Tyhp\Optimize\Pure]
         fn find(callable(TValue, TKey): bool $callback): ?TValue => \array_find($this, $callback);
         #[\Tyhp\Optimize\Pure]
