@@ -27,41 +27,5 @@ class ArrayExtensionsVersioned
         }
         return $this_[$key];
     }
-    public static function find(array $this_, callable $callback): mixed
-    {
-        foreach ($this_ as $key => $value) {
-            if ($callback($value, $key)) {
-                return $value;
-            }
-        }
-        return null;
-    }
-    public static function findKey(array $this_, callable $callback): int|string|null
-    {
-        foreach ($this_ as $key => $value) {
-            if ($callback($value, $key)) {
-                return $key;
-            }
-        }
-        return null;
-    }
-    public static function any(array $this_, callable $callback): bool
-    {
-        foreach ($this_ as $key => $value) {
-            if ($callback($value, $key)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    public static function all(array $this_, callable $callback): bool
-    {
-        foreach ($this_ as $key => $value) {
-            if (!$callback($value, $key)) {
-                return false;
-            }
-        }
-        return true;
-    }
 }
 //# sourceMappingURL=ArrayExtensionsVersioned.php.map

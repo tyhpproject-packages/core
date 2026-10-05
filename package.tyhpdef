@@ -2,7 +2,7 @@
 /**
  * AUTO-GENERATED, DO NOT EDIT
  * Compiler: 805.1.0.0
- * Generated: 2026-10-05T14:05:03.7535350Z
+ * Generated: 2026-10-05T14:05:14.1885730Z
  */
 global use extension \Tyhp\ArrayExtensions;
 global use extension \Tyhp\ArrayExtensionsVersioned;
@@ -106,6 +106,10 @@ namespace Tyhp {
         public static function detectEncoding(string $string): string|false;
         #[\Tyhp\Php(">=8.3")]
         public static function strPad(string $string, int $length, string $padString = ' ', int $padType = \STR_PAD_RIGHT): string;
+        #[\Tyhp\Php(">=8.4")]
+        public static function ucFirst(string $string): string;
+        #[\Tyhp\Php(">=8.4")]
+        public static function lcFirst(string $string): string;
     }
     class StringExtensions as StringExtensions__tyhpExtensionBacker {
         public static function match(string $this_, string $pattern, int $flags = 0, int $offset = 0): \PregMatchSetNullable|\PregMatchSetOffset|\PregMatchSetOffsetNullable|null;
@@ -249,9 +253,9 @@ namespace Tyhp {
         #[\Tyhp\Optimize\Pure]
         fn padRight(int $length, string $padString = ' '): string => \Tyhp\StringHelper::strPad($this, $length, $padString, \STR_PAD_RIGHT);
         #[\Tyhp\Optimize\Pure]
-        fn ucFirst(): string => \Tyhp\StringHelper::strtoupper(\Tyhp\StringHelper::substr($this, 0, 1)) . \Tyhp\StringHelper::substr($this, 1);
+        fn ucFirst(): string => \Tyhp\StringHelper::ucFirst($this);
         #[\Tyhp\Optimize\Pure]
-        fn lcFirst(): string => \Tyhp\StringHelper::strtolower(\Tyhp\StringHelper::substr($this, 0, 1)) . \Tyhp\StringHelper::substr($this, 1);
+        fn lcFirst(): string => \Tyhp\StringHelper::lcFirst($this);
     }
     /**
     * Single physical storage cell for one hooked property on one object.
@@ -894,14 +898,6 @@ namespace Tyhp {
         public static function first<TKey extends int|string, TValue>(array<TKey, TValue> $this_): ?TValue;
         #[\Tyhp\Optimize\Pure]
         public static function last<TKey extends int|string, TValue>(array<TKey, TValue> $this_): ?TValue;
-        #[\Tyhp\Optimize\Pure]
-        public static function find<TKey extends int|string, TValue>(array<TKey, TValue> $this_, callable(TValue, TKey): bool $callback): ?TValue;
-        #[\Tyhp\Optimize\Pure]
-        public static function findKey<TKey extends int|string, TValue>(array<TKey, TValue> $this_, callable(TValue, TKey): bool $callback): ?TKey;
-        #[\Tyhp\Optimize\Pure]
-        public static function any<TKey extends int|string, TValue>(array<TKey, TValue> $this_, callable(TValue, TKey): bool $callback): bool;
-        #[\Tyhp\Optimize\Pure]
-        public static function all<TKey extends int|string, TValue>(array<TKey, TValue> $this_, callable(TValue, TKey): bool $callback): bool;
     }
     extension ArrayExtensionsVersioned<TKey extends int|string, TValue> extends array<TKey, TValue> {
         #[\Tyhp\Optimize\Pure]
@@ -909,13 +905,13 @@ namespace Tyhp {
         #[\Tyhp\Optimize\Pure]
         fn last(): ?TValue => ArrayExtensionsVersioned__tyhpExtensionBacker::last($this);
         #[\Tyhp\Optimize\Pure]
-        fn find(callable(TValue, TKey): bool $callback): ?TValue => ArrayExtensionsVersioned__tyhpExtensionBacker::find($this, $callback);
+        fn find(callable(TValue, TKey): bool $callback): ?TValue => \array_find($this, $callback);
         #[\Tyhp\Optimize\Pure]
-        fn findKey(callable(TValue, TKey): bool $callback): ?TKey => ArrayExtensionsVersioned__tyhpExtensionBacker::findKey($this, $callback);
+        fn findKey(callable(TValue, TKey): bool $callback): ?TKey => \array_find_key($this, $callback);
         #[\Tyhp\Optimize\Pure]
-        fn any(callable(TValue, TKey): bool $callback): bool => ArrayExtensionsVersioned__tyhpExtensionBacker::any($this, $callback);
+        fn any(callable(TValue, TKey): bool $callback): bool => \array_any($this, $callback);
         #[\Tyhp\Optimize\Pure]
-        fn all(callable(TValue, TKey): bool $callback): bool => ArrayExtensionsVersioned__tyhpExtensionBacker::all($this, $callback);
+        fn all(callable(TValue, TKey): bool $callback): bool => \array_all($this, $callback);
     }
     /**
     * Opt-in: allow `unset($this->prop)` on a typed instance property (Prop-init #8).
