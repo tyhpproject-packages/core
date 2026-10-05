@@ -77,5 +77,9 @@ final class StringHelper
         }
         return \mb_detect_encoding($string);
     }
+    public static function strPad(string $string, int $length, string $padString = ' ', int $padType = \STR_PAD_RIGHT): string
+    {
+        return self::hasMbStringExt() ? \mb_str_pad($string, $length, $padString, $padType) : \str_pad($string, $length, $padString, $padType);
+    }
 }
 //# sourceMappingURL=StringHelper.php.map
