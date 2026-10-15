@@ -77,6 +77,12 @@ final class Generic
      * @psalm-var array<string, GenericRuntime>
      */
     private static array $functionRuntimeCache = [];
+    /**
+     * Wrapper closures made by {@see Generic::wrapCallable()}, each mapped to the native
+     * first-class callable it wraps and the factory that rebuilds it around another target.
+     * Weak keys: an entry lives as long as its wrapper.
+     */
+    private static ?\WeakMap $wrappedCallables = null;
     private bool $spent = false;
     /**
      * @param string            $className
@@ -85,6 +91,35 @@ final class Generic
      * @param string|null       $factory
      */
     private function __construct(private readonly string $className, private readonly array $typeArguments, private readonly bool $erased, private readonly ?string $factory) {}
+    /**
+     * Wrap a first-class callable of a generic function or method so that it keeps
+     * its type-binding identity.
+     *
+     * Emitted for a first-class callable whose parameters accept more than their declared
+     * types (implicit conversions): `$factory` receives a callable and returns the typed
+     * closure that converts the arguments and then calls it. `$target` is the native
+     * first-class callable of the generic function or method. The returned closure behaves as
+     * `$factory($target)`; {@see Generic::bind()} on it binds `$target` and applies the same
+     * `$factory` to the bound closure, so the conversions survive the binding.
+     *
+     * @param \Closure $target  Native first-class callable of the generic function or method.
+     * @param \Closure $factory `fn(\Closure $target): \Closure` returning the converting closure.
+     *
+     * @return \Closure
+     *
+     * @throws \InvalidArgumentException When `$factory` does not return a `\Closure`.
+     */
+    public static function wrapCallable(\Closure $target, \Closure $factory): \Closure
+    {
+        $wrapper = $factory($target);
+        if (!($wrapper instanceof \Closure)) {
+            throw new \InvalidArgumentException('Generic::wrapCallable() expects the factory to return a \Closure.');
+        }
+        $registry = self::$wrappedCallables ??= new \WeakMap();
+        $entry = [$target, $factory];
+        $registry[$wrapper] = $entry;
+        return $wrapper;
+    }
     /**
      * Bind type arguments to a generic class or callable.
      *
@@ -183,6 +218,17 @@ final class Generic
     private static function bindCallable(mixed $callable, array $typeArguments): \Closure
     {
         if ($callable instanceof \Closure) {
+            $registry = self::$wrappedCallables;
+            if (($registry !== null) && $registry->offsetExists($callable)) {
+                $entry = $registry[$callable];
+                if (\is_array($entry)) {
+                    $wrappedTarget = $entry[0] ?? null;
+                    $wrappedFactory = $entry[1] ?? null;
+                    if (($wrappedTarget instanceof \Closure) && ($wrappedFactory instanceof \Closure)) {
+                        return self::wrapCallable(self::bindCallable($wrappedTarget, $typeArguments), $wrappedFactory);
+                    }
+                }
+            }
             $ref = new \ReflectionFunction($callable);
             if ($ref->isAnonymous()) {
                 throw new \InvalidArgumentException('Generic::bind() cannot bind an anonymous Closure; pass a first-class callable ' . 'to a named function/method.');
@@ -452,7 +498,8 @@ final class Generic
         return $this->newWithArgs($constructorArguments);
     }
     /**
-     * @param list<mixed> $constructorArguments
+     * @param array<int|string, mixed> $constructorArguments Positional entries are int-keyed; named
+     *                                                       arguments keep their string key.
      *
      * @return TTarget
      *
@@ -479,8 +526,12 @@ final class Generic
         foreach ($typeArguments as $typeArgument) {
             $invokeArgs[] = $typeArgument;
         }
-        foreach ($constructorArguments as $constructorArgument) {
-            $invokeArgs[] = $constructorArgument;
+        foreach ($constructorArguments as $argumentKey => $constructorArgument) {
+            if (\is_string($argumentKey)) {
+                $invokeArgs[$argumentKey] = $constructorArgument;
+            } else {
+                $invokeArgs[] = $constructorArgument;
+            }
         }
         $bound = $factoryMethod->invokeArgs(null, $invokeArgs);
         if (!\is_object($bound)) {

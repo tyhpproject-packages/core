@@ -2,7 +2,7 @@
 /**
  * AUTO-GENERATED, DO NOT EDIT
  * Compiler: 805.1.0.0
- * Generated: 2026-10-05T14:05:44.5269000Z
+ * Generated: 2026-10-15T16:28:51.4516130Z
  */
 global use extension \Tyhp\ArrayExtensions;
 global use extension \Tyhp\ArrayExtensionsVersioned;
@@ -12,6 +12,18 @@ global use extension \Tyhp\FloatExtensions;
 global use extension \Tyhp\IntExtensions;
 global use extension \Tyhp\StringExtensions;
 global use extension \Tyhp\StringExtensionsVersioned;
+/**
+* Binds type arguments to a generic class or callable.
+*
+* Root-function spelling of {@see \Tyhp\Generic::bind()}. Same signature: a class-string
+* returns a binder whose `new()` / call runs the constructor, and a callable returns
+* the closure with those type arguments applied. Does not construct.
+*
+*     $box = gnrc(Box::class, \Tyhp\Type::int())->new(42);
+*
+* Skipped when a global `gnrc` already exists.
+*/
+function _gnrc(mixed $target, ?\Tyhp\Type ...$typeArguments): mixed;
 namespace Tyhp {
     class \Tyhp\Type implements \Stringable {
         protected function __construct(string $kind, ?string $name = null, array<self|\Tyhp\NamedType> $typeArgs = [], bool $isReadOnly = false, bool $isNullable = false, array<int|string, self> $structFields = [], array<int, int|string> $structRequiredKeys = [], array<int, string> $objectShapeMethods = [], array<int, string> $objectShapeProperties = []): void;
@@ -31,6 +43,14 @@ namespace Tyhp {
         public static function union(self ...$types): self;
         public static function intersection(self ...$types): self;
         public static function nullable(self $type): self;
+        /**
+        * The runtime form of `__Awaited<T>`: the type a value has once every `\Tyhp\Promise`
+        * layer has settled. A promise of `X` becomes the awaited type of `X`; a bare `Promise`
+        * (a callable that only reports `\Tyhp\Promise` as its return type) becomes `mixed`.
+        * Unions and nullable types are unwrapped member by member. Every other type, including
+        * `mixed` and `void`, is returned unchanged.
+        */
+        public static function awaited(self $type): self;
         public static function generic(string $className, \Tyhp\NamedType ...$params): self;
         /**
         * A Tyhp struct shape: an associative array with named (or aliased) keys.
@@ -104,12 +124,6 @@ namespace Tyhp {
         public static function ucWords(string $string): string;
         public static function convertEncoding(string $string, string $toEncoding, array|string|null $fromEncoding = null): string|false;
         public static function detectEncoding(string $string): string|false;
-        #[\Tyhp\Php(">=8.3")]
-        public static function strPad(string $string, int $length, string $padString = ' ', int $padType = \STR_PAD_RIGHT): string;
-        #[\Tyhp\Php(">=8.4")]
-        public static function ucFirst(string $string): string;
-        #[\Tyhp\Php(">=8.4")]
-        public static function lcFirst(string $string): string;
     }
     class StringExtensions as StringExtensions__tyhpExtensionBacker {
         public static function match(string $this_, string $pattern, int $flags = 0, int $offset = 0): \PregMatchSetNullable|\PregMatchSetOffset|\PregMatchSetOffsetNullable|null;
@@ -125,7 +139,18 @@ namespace Tyhp {
     extension StringExtensions extends string {
         #[\Tyhp\Optimize\Pure]
         fn reverse(): string => \implode('', \array_reverse(\Tyhp\StringHelper::strSplit($this)));
+        #[\Tyhp\Optimize\Pure]
+        fn match(string $pattern, 0 $flags = 0, int $offset = 0): ?\PregMatchSet => StringExtensions__tyhpExtensionBacker::match($this, $pattern, $flags, $offset);
+        fn match(string $pattern, 256 $flags, int $offset = 0): ?\PregMatchSetOffset => StringExtensions__tyhpExtensionBacker::match($this, $pattern, $flags, $offset);
+        fn match(string $pattern, 512 $flags, int $offset = 0): ?\PregMatchSetNullable => StringExtensions__tyhpExtensionBacker::match($this, $pattern, $flags, $offset);
+        fn match(string $pattern, 768 $flags, int $offset = 0): ?\PregMatchSetOffsetNullable => StringExtensions__tyhpExtensionBacker::match($this, $pattern, $flags, $offset);
         fn match(string $pattern, int $flags = 0, int $offset = 0): \PregMatchSetNullable|\PregMatchSetOffset|\PregMatchSetOffsetNullable|null => StringExtensions__tyhpExtensionBacker::match($this, $pattern, $flags, $offset);
+        #[\Tyhp\Optimize\Pure]
+        fn matchAll(string $pattern, 0|1 $flags = 0, int $offset = 0): \PregMatchAllSet|false => StringExtensions__tyhpExtensionBacker::matchAll($this, $pattern, $flags, $offset);
+        fn matchAll(string $pattern, 2 $flags, int $offset = 0): \PregMatchAllList|false => StringExtensions__tyhpExtensionBacker::matchAll($this, $pattern, $flags, $offset);
+        fn matchAll(string $pattern, 256 $flags, int $offset = 0): \PregOffsetCaptureAllSet|false => StringExtensions__tyhpExtensionBacker::matchAll($this, $pattern, $flags, $offset);
+        fn matchAll(string $pattern, 512 $flags, int $offset = 0): \PregMatchAllSetNullable|false => StringExtensions__tyhpExtensionBacker::matchAll($this, $pattern, $flags, $offset);
+        fn matchAll(string $pattern, 768 $flags, int $offset = 0): \PregOffsetCaptureAllSetNullable|false => StringExtensions__tyhpExtensionBacker::matchAll($this, $pattern, $flags, $offset);
         fn matchAll(string $pattern, int $flags = 0, int $offset = 0): array<int|string, mixed>|false => StringExtensions__tyhpExtensionBacker::matchAll($this, $pattern, $flags, $offset);
         #[\Tyhp\Optimize\Pure]
         fn length(): int => \Tyhp\StringHelper::strlen($this);
@@ -179,6 +204,9 @@ namespace Tyhp {
         fn regexReplace(string $pattern, string $replacement): string|null => \preg_replace($pattern, $replacement, $this);
         #[\Tyhp\Optimize\Pure]
         fn split(string $delimiter, int $limit = \PHP_INT_MAX): array<int, string> => \explode($delimiter, $this, $limit);
+        #[\Tyhp\Optimize\Pure]
+        fn regexSplit(string $pattern, int $limit = -1, 0|1|2|3 $flags = 0): array<int, string>|false => \preg_split($pattern, $this, $limit, $flags);
+        fn regexSplit(string $pattern, int $limit, 4|5|6|7 $flags): array<int, \PregOffsetCapture>|false => \preg_split($pattern, $this, $limit, $flags);
         fn regexSplit(string $pattern, int $limit = -1, int $flags = 0): array<int, string>|array<int, \PregOffsetCapture>|false => \preg_split($pattern, $this, $limit, $flags);
         #[\Tyhp\Optimize\Pure]
         fn repeat(int $times): string => \str_repeat($this, $times);
@@ -186,6 +214,10 @@ namespace Tyhp {
         fn byteReverse(): string => \strrev($this);
         #[\Tyhp\Optimize\Pure]
         fn wordWrap(int $width = 75, string $break = "\n", bool $cutLongWords = false): string => \wordwrap($this, $width, $break, $cutLongWords);
+        #[\Tyhp\Optimize\Pure]
+        fn wordCount(0 $format = 0, ?string $characters = null): int => \str_word_count($this, $format, $characters);
+        fn wordCount(1 $format, ?string $characters = null): array<int, string> => \str_word_count($this, $format, $characters);
+        fn wordCount(2 $format, ?string $characters = null): array<int, string> => \str_word_count($this, $format, $characters);
         fn wordCount(int $format = 0, ?string $characters = null): array<int, string>|int => \str_word_count($this, $format, $characters);
         #[\Tyhp\Optimize\Pure]
         fn format(mixed ...$args): string => \sprintf($this, ...$args);
@@ -202,11 +234,11 @@ namespace Tyhp {
         #[\Tyhp\Optimize\Pure]
         fn rawUrlDecode(): string => \rawurldecode($this);
         #[\Tyhp\Optimize\Pure]
-        fn htmlEncode(int $flags = null, bool $doubleEncode = true): string => \htmlspecialchars($this, $flags, null, $doubleEncode);
+        fn htmlEncode(int $flags = \ENT_QUOTES | \ENT_SUBSTITUTE | \ENT_HTML401, bool $doubleEncode = true): string => \htmlspecialchars($this, $flags, null, $doubleEncode);
         #[\Tyhp\Optimize\Pure]
-        fn htmlDecode(int $flags = null): string => \htmlspecialchars_decode($this, $flags);
+        fn htmlDecode(int $flags = \ENT_QUOTES | \ENT_SUBSTITUTE | \ENT_HTML401): string => \htmlspecialchars_decode($this, $flags);
         #[\Tyhp\Optimize\Pure]
-        fn htmlEntities(int $flags = null, bool $doubleEncode = true): string => \htmlentities($this, $flags, null, $doubleEncode);
+        fn htmlEntities(int $flags = \ENT_QUOTES | \ENT_SUBSTITUTE | \ENT_HTML401, bool $doubleEncode = true): string => \htmlentities($this, $flags, null, $doubleEncode);
         #[\Tyhp\Optimize\Pure]
         fn nl2Br(bool $useXhtml = true): string => \nl2br($this, $useXhtml);
         #[\Tyhp\Optimize\Pure]
@@ -247,15 +279,15 @@ namespace Tyhp {
     }
     extension StringExtensionsVersioned extends string {
         #[\Tyhp\Optimize\Pure]
-        fn pad(int $length, string $padString = ' ', int $padType = \STR_PAD_RIGHT): string => \Tyhp\StringHelper::strPad($this, $length, $padString, $padType);
+        fn pad(int $length, string $padString = ' ', int $padType = \STR_PAD_RIGHT): string => \str_pad($this, $length, $padString, $padType);
         #[\Tyhp\Optimize\Pure]
-        fn padLeft(int $length, string $padString = ' '): string => \Tyhp\StringHelper::strPad($this, $length, $padString, \STR_PAD_LEFT);
+        fn padLeft(int $length, string $padString = ' '): string => \str_pad($this, $length, $padString, \STR_PAD_LEFT);
         #[\Tyhp\Optimize\Pure]
-        fn padRight(int $length, string $padString = ' '): string => \Tyhp\StringHelper::strPad($this, $length, $padString, \STR_PAD_RIGHT);
+        fn padRight(int $length, string $padString = ' '): string => \str_pad($this, $length, $padString, \STR_PAD_RIGHT);
         #[\Tyhp\Optimize\Pure]
-        fn ucFirst(): string => \Tyhp\StringHelper::ucFirst($this);
+        fn ucFirst(): string => \Tyhp\StringHelper::strtoupper(\Tyhp\StringHelper::substr($this, 0, 1)) . \Tyhp\StringHelper::substr($this, 1);
         #[\Tyhp\Optimize\Pure]
-        fn lcFirst(): string => \Tyhp\StringHelper::lcFirst($this);
+        fn lcFirst(): string => \Tyhp\StringHelper::strtolower(\Tyhp\StringHelper::substr($this, 0, 1)) . \Tyhp\StringHelper::substr($this, 1);
     }
     /**
     * Single physical storage cell for one hooked property on one object.
@@ -401,7 +433,7 @@ namespace Tyhp {
     #[\Attribute(\Attribute::TARGET_ALL & ~\Attribute::TARGET_CLASS)]
     #[\Tyhp\NoEmit]
     final class PhpType {
-        public string $type;
+        readonly public string $type;
         public function __construct(string $type): void;
     }
     /**
@@ -417,7 +449,7 @@ namespace Tyhp {
     #[\Attribute(\Attribute::TARGET_ALL)]
     #[\Tyhp\NoEmit]
     final class Php {
-        public string $version;
+        readonly public string $version;
         public function __construct(string $version): void;
     }
     class ObjectHelper {
@@ -459,8 +491,8 @@ namespace Tyhp {
     /**
     * Typed JSON helpers. `\json_decode` stays a PHP builtin (objects vs arrays, `mixed` only
     * when `$associative` is not a literal). {@see decode} always decodes objects as arrays
-    * and checks the result against `T` — the C# `JsonSerializer.Deserialize<T>` analogue for
-    * Tyhp structs, arrays of structs, and scalars.
+    * and checks the result against the struct `T` — the C# `JsonSerializer.Deserialize<T>`
+    * analogue for Tyhp structs. Fields that are neither nullable nor defaulted must be present.
     */
     final class Json {
         /**
@@ -507,9 +539,9 @@ namespace Tyhp {
         #[\Tyhp\Optimize\Pure]
         fn sign(): int => $this <=> 0;
         #[\Tyhp\Optimize\Pure]
-        fn max(int ...$values): int => \max($this, ...$values);
+        fn max(int $value, int ...$values): int => \max($this, $value, ...$values);
         #[\Tyhp\Optimize\Pure]
-        fn min(int ...$values): int => \min($this, ...$values);
+        fn min(int $value, int ...$values): int => \min($this, $value, ...$values);
         #[\Tyhp\Optimize\Pure]
         fn pow(int $exponent): int|float => $this ** $exponent;
         #[\Tyhp\Optimize\Pure]
@@ -549,13 +581,13 @@ namespace Tyhp {
     */
     #[\Attribute(\Attribute::TARGET_ALL)]
     final class GenericRuntime {
-        public bool $erased ?? false;
-        public ?string $binder ?? null;
-        public ?string $factory ?? null;
-        public ?string $aliasFactory ?? null;
-        public array<int> $layouts ?? [1];
-        public ?string $compiler ?? null;
-        public function __construct(bool $erased = false, ?string $binder = null, ?string $factory = null, ?string $aliasFactory = null, array<int> $layouts = null, ?string $compiler = null): void;
+        readonly public bool $erased ?? false;
+        readonly public ?string $binder ?? null;
+        readonly public ?string $factory ?? null;
+        readonly public ?string $aliasFactory ?? null;
+        readonly public array<int> $layouts ?? [1];
+        readonly public ?string $compiler ?? null;
+        public function __construct(bool $erased = false, ?string $binder = null, ?string $factory = null, ?string $aliasFactory = null, array<int> $layouts = [1], ?string $compiler = null): void;
     }
     /**
     * Runtime bag of bound generic type arguments for one object instance.
@@ -608,6 +640,25 @@ namespace Tyhp {
     * @psalm-template TTarget of object
     */
     final class Generic {
+        /**
+        * Wrap a first-class callable of a generic function or method so that it keeps
+        * its type-binding identity.
+        *
+        * Emitted for a first-class callable whose parameters accept more than their declared
+        * types (implicit conversions): `$factory` receives a callable and returns the typed
+        * closure that converts the arguments and then calls it. `$target` is the native
+        * first-class callable of the generic function or method. The returned closure behaves as
+        * `$factory($target)`; {@see Generic::bind()} on it binds `$target` and applies the same
+        * `$factory` to the bound closure, so the conversions survive the binding.
+        *
+        * @param \Closure $target  Native first-class callable of the generic function or method.
+        * @param \Closure $factory `fn(\Closure $target): \Closure` returning the converting closure.
+        *
+        * @return \Closure
+        *
+        * @throws \InvalidArgumentException When `$factory` does not return a `\Closure`.
+        */
+        public static function wrapCallable(\Closure $target, \Closure $factory): \Closure;
         /**
         * Bind type arguments to a generic class or callable.
         *
@@ -739,7 +790,7 @@ namespace Tyhp {
     * Usages of this attribute and this class declaration are omitted from emitted PHP
     * (`#[\Tyhp\NoEmit]`).
     */
-    #[\Attribute((\Attribute::TARGET_CLASS | \Attribute::TARGET_PROPERTY) | \Attribute::TARGET_PARAMETER)]
+    #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_PROPERTY | \Attribute::TARGET_PARAMETER)]
     #[\Tyhp\NoEmit]
     final class EraseGeneric {
         public function __construct(): void;
@@ -893,19 +944,33 @@ namespace Tyhp {
             fn countValues(): array<TValue, int> => \array_count_values($this);
         }
     }
+    class ArrayExtensionsVersioned as ArrayExtensionsVersioned__tyhpExtensionBacker {
+        #[\Tyhp\Optimize\Pure]
+        public static function first<TKey extends int|string, TValue>(array<TKey, TValue> $this_): ?TValue;
+        #[\Tyhp\Optimize\Pure]
+        public static function last<TKey extends int|string, TValue>(array<TKey, TValue> $this_): ?TValue;
+        #[\Tyhp\Optimize\Pure]
+        public static function find<TKey extends int|string, TValue>(array<TKey, TValue> $this_, callable(TValue, TKey): bool $callback): ?TValue;
+        #[\Tyhp\Optimize\Pure]
+        public static function findKey<TKey extends int|string, TValue>(array<TKey, TValue> $this_, callable(TValue, TKey): bool $callback): ?TKey;
+        #[\Tyhp\Optimize\Pure]
+        public static function any<TKey extends int|string, TValue>(array<TKey, TValue> $this_, callable(TValue, TKey): bool $callback): bool;
+        #[\Tyhp\Optimize\Pure]
+        public static function all<TKey extends int|string, TValue>(array<TKey, TValue> $this_, callable(TValue, TKey): bool $callback): bool;
+    }
     extension ArrayExtensionsVersioned<TKey extends int|string, TValue> extends array<TKey, TValue> {
         #[\Tyhp\Optimize\Pure]
-        fn first(): ?TValue => \array_first($this);
+        fn first(): ?TValue => ArrayExtensionsVersioned__tyhpExtensionBacker::first($this);
         #[\Tyhp\Optimize\Pure]
-        fn last(): ?TValue => \array_last($this);
+        fn last(): ?TValue => ArrayExtensionsVersioned__tyhpExtensionBacker::last($this);
         #[\Tyhp\Optimize\Pure]
-        fn find(callable(TValue, TKey): bool $callback): ?TValue => \array_find($this, $callback);
+        fn find(callable(TValue, TKey): bool $callback): ?TValue => ArrayExtensionsVersioned__tyhpExtensionBacker::find($this, $callback);
         #[\Tyhp\Optimize\Pure]
-        fn findKey(callable(TValue, TKey): bool $callback): ?TKey => \array_find_key($this, $callback);
+        fn findKey(callable(TValue, TKey): bool $callback): ?TKey => ArrayExtensionsVersioned__tyhpExtensionBacker::findKey($this, $callback);
         #[\Tyhp\Optimize\Pure]
-        fn any(callable(TValue, TKey): bool $callback): bool => \array_any($this, $callback);
+        fn any(callable(TValue, TKey): bool $callback): bool => ArrayExtensionsVersioned__tyhpExtensionBacker::any($this, $callback);
         #[\Tyhp\Optimize\Pure]
-        fn all(callable(TValue, TKey): bool $callback): bool => \array_all($this, $callback);
+        fn all(callable(TValue, TKey): bool $callback): bool => ArrayExtensionsVersioned__tyhpExtensionBacker::all($this, $callback);
     }
     /**
     * Opt-in: allow `unset($this->prop)` on a typed instance property (Prop-init #8).

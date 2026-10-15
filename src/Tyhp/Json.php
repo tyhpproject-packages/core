@@ -13,8 +13,8 @@ use Tyhp\Exceptions\IncompatibleTypeException;
 /**
  * Typed JSON helpers. `\json_decode` stays a PHP builtin (objects vs arrays, `mixed` only
  * when `$associative` is not a literal). {@see decode} always decodes objects as arrays
- * and checks the result against `T` — the C# `JsonSerializer.Deserialize<T>` analogue for
- * Tyhp structs, arrays of structs, and scalars.
+ * and checks the result against the struct `T` — the C# `JsonSerializer.Deserialize<T>`
+ * analogue for Tyhp structs. Fields that are neither nullable nor defaulted must be present.
  */
 final class Json
 {

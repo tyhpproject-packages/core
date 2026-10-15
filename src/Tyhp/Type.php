@@ -126,6 +126,48 @@ class Type implements \Stringable
         }
         return new self($type->kind, $type->name, $type->typeArgs, $type->isReadOnly, true, $type->structFields, $type->structRequiredKeys, $type->objectShapeMethods, $type->objectShapeProperties);
     }
+    /**
+     * The runtime form of `__Awaited<T>`: the type a value has once every `\Tyhp\Promise`
+     * layer has settled. A promise of `X` becomes the awaited type of `X`; a bare `Promise`
+     * (a callable that only reports `\Tyhp\Promise` as its return type) becomes `mixed`.
+     * Unions and nullable types are unwrapped member by member. Every other type, including
+     * `mixed` and `void`, is returned unchanged.
+     */
+    public static function awaited(self $type): self
+    {
+        if ($type instanceof NamedType) {
+            return self::awaited($type->getUnderlyingType());
+        }
+        if ($type->kind === 'scalar') {
+            return $type;
+        }
+        if ($type->isNullable) {
+            return self::nullable(self::awaited(new self($type->kind, $type->name, $type->typeArgs, $type->isReadOnly, false, $type->structFields, $type->structRequiredKeys, $type->objectShapeMethods, $type->objectShapeProperties)));
+        }
+        if ($type->kind === 'union') {
+            $settled = [];
+            foreach ($type->typeArgs as $member) {
+                $awaitedMember = self::awaited($member);
+                if (($awaitedMember->kind === 'scalar') && ($awaitedMember->name === 'mixed')) {
+                    return $awaitedMember;
+                }
+                if (!\in_array($awaitedMember, $settled, true)) {
+                    $settled[] = $awaitedMember;
+                }
+            }
+            return (\count($settled) === 1) ? $settled[0] : self::union(...$settled);
+        }
+        if (($type->kind !== 'class') && ($type->kind !== 'generic')) {
+            return $type;
+        }
+        if (\strtolower(\ltrim($type->name ?? '', '\\')) !== 'tyhp\\promise') {
+            return $type;
+        }
+        if (($type->kind === 'generic') && (\count($type->typeArgs) > 0)) {
+            return self::awaited($type->typeArgs[0]);
+        }
+        return self::mixed();
+    }
     public static function generic(string $className, \Tyhp\NamedType ...$params): self
     {
         return new self('generic', $className, $params);
@@ -189,7 +231,7 @@ class Type implements \Stringable
                 $ref = new \ReflectionMethod($callable, '__invoke');
             }
         } catch (\Throwable $e) {
-            (void) $e;
+            $e;
             return null;
         }
         if ($ref === null) {
@@ -529,7 +571,7 @@ class Type implements \Stringable
         try {
             $ref = new \ReflectionObject($value);
         } catch (\Throwable $e) {
-            (void) $e;
+            $e;
             return false;
         }
         foreach ($type->objectShapeMethods as $methodName) {
@@ -549,7 +591,7 @@ class Type implements \Stringable
      */
     private static function isCallableShape(mixed $value, self $type): bool
     {
-        (void) $type;
+        $type;
         return \is_callable($value);
     }
     private static function objectHasPublicMethod(\ReflectionObject $ref, string $name): bool
@@ -557,7 +599,7 @@ class Type implements \Stringable
         try {
             $method = $ref->getMethod($name);
         } catch (\Throwable $e) {
-            (void) $e;
+            $e;
             return false;
         }
         return $method->isPublic() && !$method->isConstructor();
@@ -567,7 +609,7 @@ class Type implements \Stringable
         try {
             $property = $ref->getProperty($name);
         } catch (\Throwable $e) {
-            (void) $e;
+            $e;
             return false;
         }
         return $property->isPublic();

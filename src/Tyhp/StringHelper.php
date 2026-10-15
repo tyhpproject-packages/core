@@ -77,17 +77,5 @@ final class StringHelper
         }
         return \mb_detect_encoding($string);
     }
-    public static function strPad(string $string, int $length, string $padString = ' ', int $padType = \STR_PAD_RIGHT): string
-    {
-        return self::hasMbStringExt() ? \mb_str_pad($string, $length, $padString, $padType) : \str_pad($string, $length, $padString, $padType);
-    }
-    public static function ucFirst(string $string): string
-    {
-        return self::hasMbStringExt() ? \mb_ucfirst($string) : \ucfirst($string);
-    }
-    public static function lcFirst(string $string): string
-    {
-        return self::hasMbStringExt() ? \mb_lcfirst($string) : \lcfirst($string);
-    }
 }
 //# sourceMappingURL=StringHelper.php.map

@@ -85,7 +85,7 @@ final class PropertyAccessorObject
                                 }
                             }
                         } catch (\Throwable $e) {
-                            (void) $e;
+                            $e;
                         }
                     }
                 } elseif (!$backed && $this->inheritedPropertyExists($host, $property)) {
@@ -211,7 +211,7 @@ final class PropertyAccessorObject
         try {
             unset($host->$property);
         } catch (\Throwable $e) {
-            (void) $e;
+            $e;
         }
     }
     /**
