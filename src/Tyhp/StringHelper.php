@@ -81,5 +81,13 @@ final class StringHelper
     {
         return self::hasMbStringExt() ? \mb_str_pad($string, $length, $padString, $padType) : \str_pad($string, $length, $padString, $padType);
     }
+    public static function ucFirst(string $string): string
+    {
+        return self::hasMbStringExt() ? \mb_ucfirst($string) : \ucfirst($string);
+    }
+    public static function lcFirst(string $string): string
+    {
+        return self::hasMbStringExt() ? \mb_lcfirst($string) : \lcfirst($string);
+    }
 }
 //# sourceMappingURL=StringHelper.php.map
