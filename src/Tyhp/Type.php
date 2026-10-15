@@ -231,7 +231,7 @@ class Type implements \Stringable
                 $ref = new \ReflectionMethod($callable, '__invoke');
             }
         } catch (\Throwable $e) {
-            $e;
+            (void) $e;
             return null;
         }
         if ($ref === null) {
@@ -571,7 +571,7 @@ class Type implements \Stringable
         try {
             $ref = new \ReflectionObject($value);
         } catch (\Throwable $e) {
-            $e;
+            (void) $e;
             return false;
         }
         foreach ($type->objectShapeMethods as $methodName) {
@@ -591,7 +591,7 @@ class Type implements \Stringable
      */
     private static function isCallableShape(mixed $value, self $type): bool
     {
-        $type;
+        (void) $type;
         return \is_callable($value);
     }
     private static function objectHasPublicMethod(\ReflectionObject $ref, string $name): bool
@@ -599,7 +599,7 @@ class Type implements \Stringable
         try {
             $method = $ref->getMethod($name);
         } catch (\Throwable $e) {
-            $e;
+            (void) $e;
             return false;
         }
         return $method->isPublic() && !$method->isConstructor();
@@ -609,7 +609,7 @@ class Type implements \Stringable
         try {
             $property = $ref->getProperty($name);
         } catch (\Throwable $e) {
-            $e;
+            (void) $e;
             return false;
         }
         return $property->isPublic();
