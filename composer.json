@@ -1,9 +1,9 @@
 {
     "name": "tyhp/core",
-    "description": "Tyhp runtime core (PHP 8.2) — type system, generics, typed variables, property accessors",
+    "description": "Tyhp runtime core (PHP 8.3) — type system, generics, typed variables, property accessors",
     "type": "composer-plugin",
     "license": "Apache-2.0",
-    "version": "802.0.2",
+    "version": "803.0.2",
     "extra": {
         "tyhp": {
             "interopContractVersion": 1,
@@ -22,7 +22,7 @@
         "class": "Tyhp\\Composer\\Plugin"
     },
     "require": {
-        "php": ">=8.2",
+        "php": ">=8.3",
         "composer-plugin-api": "^2.3"
     },
     "require-dev": {
